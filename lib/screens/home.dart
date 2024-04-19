@@ -5,6 +5,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:todo_app/screens/add_todo.dart';
 import 'package:http/http.dart' as http;
+import 'package:todo_app/services/todo_services.dart';
+import 'package:todo_app/utils/snakbarhelper.dart';
+import 'package:todo_app/widgets/todo_card.dart';
 
 
 class Homepage extends StatefulWidget {
@@ -46,33 +49,8 @@ class _HomepageState extends State<Homepage> {
               itemCount: items.length,
               itemBuilder: (context, index) {
                final item = items[index] as Map;
-               final id = item["_id"] as String;
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(child: Text("${index+1}")),
-                  title: Text(item["title"]),
-                  subtitle: Text(item["description"]),
-                  trailing: PopupMenuButton(
-                    onSelected: (value) {
-                      if (value == "Edit") {
-                        // edit todo page
-                        navigateTodoeditpage(item);
-                      }
-                      else if (value == "delete") {
-                        deletebyid(id);
-                      }
-                    },
-                    itemBuilder: (context){
-                    return [
-                      PopupMenuItem(child: Text("Edit"),
-                      value: "Edit",
-                      ),
-                       PopupMenuItem(child: Text("delete"),
-                       value: "delete",),
-                    ];
-                  }),
-                ),
-              );
+              //  final id = item["_id"] as String;
+              return  TodoCard(index: index, item: item, navigateTodoeditpage: navigateTodoeditpage, deleteByid: deletebyid,);
             }),
           ),
         ),
@@ -104,10 +82,8 @@ class _HomepageState extends State<Homepage> {
 Future <void> deletebyid(String id) async {
 
   // delete the item by id
-  final url = "http://api.nstack.in/v1/todos/$id";
-  final uri = Uri.parse(url);
-  final response = await http.delete(uri);
-  if(response.statusCode == 200){
+ final iSsuccess = await todoservices.deleteByid(id);
+  if(iSsuccess){
 
     print("deleted successfully");
     // remove from list
@@ -131,24 +107,24 @@ Future <void> deletebyid(String id) async {
       isloading = true;
     });
 
-    final url = "http://api.nstack.in/v1/todos?page=1";
-    final uri = Uri.parse(url);
-    final response = await http.get(uri);
-    if(response.statusCode == 200){
-      final json = jsonDecode(response.body) as Map;
-      final data = json["items"] as List;
-      print(response.statusCode);
-
+   
+    final response = await todoservices.fetchtodos();
+    if(response != Null){
+      
       setState(() {
-        items = data;
+        items = response!;
         isloading = false;
         
       });
+    } else {
+      showerrorMessage(context, message: "Something went wrong");
     }
 
-  //  setState(() {
-  //    isloading = false;
-  //  });
+   setState(() {
+     isloading = false;
+   });
     
   }
+
+   
 }
