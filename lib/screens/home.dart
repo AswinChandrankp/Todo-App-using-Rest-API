@@ -38,37 +38,43 @@ class _HomepageState extends State<Homepage> {
         child: Center(child: CircularProgressIndicator()),
         replacement: RefreshIndicator(
           onRefresh: fetchtodo,
-          child: ListView.builder(
-            
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-             final item = items[index] as Map;
-             final id = item["_id"] as String;
-            return ListTile(
-              leading: CircleAvatar(child: Text("${index+1}")),
-              title: Text(item["title"]),
-              subtitle: Text(item["description"]),
-              trailing: PopupMenuButton(
-                onSelected: (value) {
-                  if (value == "Edit") {
-                    // edit todo page
-                    navigateTodoeditpage(item);
-                  }
-                  else if (value == "delete") {
-                    deletebyid(id);
-                  }
-                },
-                itemBuilder: (context){
-                return [
-                  PopupMenuItem(child: Text("Edit"),
-                  value: "Edit",
-                  ),
-                   PopupMenuItem(child: Text("delete"),
-                   value: "delete",),
-                ];
-              }),
-            );
-          }),
+          child: Visibility(
+            visible: items.isNotEmpty,
+            replacement: Center(child: Text("No items found")),
+            child: ListView.builder(
+              padding: EdgeInsets.all(12),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+               final item = items[index] as Map;
+               final id = item["_id"] as String;
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(child: Text("${index+1}")),
+                  title: Text(item["title"]),
+                  subtitle: Text(item["description"]),
+                  trailing: PopupMenuButton(
+                    onSelected: (value) {
+                      if (value == "Edit") {
+                        // edit todo page
+                        navigateTodoeditpage(item);
+                      }
+                      else if (value == "delete") {
+                        deletebyid(id);
+                      }
+                    },
+                    itemBuilder: (context){
+                    return [
+                      PopupMenuItem(child: Text("Edit"),
+                      value: "Edit",
+                      ),
+                       PopupMenuItem(child: Text("delete"),
+                       value: "delete",),
+                    ];
+                  }),
+                ),
+              );
+            }),
+          ),
         ),
       ),
 
